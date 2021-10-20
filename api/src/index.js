@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import scenesRoute from './routes/scenes.route';
+import globalRoute from './routes/global.route';
 
 const env = process.env.NODE_ENV || 'development';
 console.log('environment: ' + env);
@@ -14,6 +15,7 @@ const baseURL = env === 'development' ? '../../' : '../';
 
 console.log('Hue Address: ' + (process.env.HUE_BRIDGE_ADDRESS || 'Not Set'));
 console.log('Hue User: ' + (process.env.HUE_USER !== null ? 'Set' : 'Unset') );
+console.log('Redis Address: ' + process.env.REDIS_ADDRESS);
 
 const app = express();
 
@@ -27,6 +29,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, `${baseURL}dnd-hue/dist`)));
 
 app.use('/api/scenes',scenesRoute);
+app.use('/api/global',globalRoute);
 
 app.get('/', (req,res) => {
     res.sendFile(path.join(__dirname, `${baseURL}dnd-hue/dist/index.html`));

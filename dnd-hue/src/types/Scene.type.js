@@ -1,4 +1,5 @@
 import Stage from "./Stage.type";
+import Utils from '../util/Utils';
 
 const MinTransitionTime = 100;
 const MaxTransitionTime = 120000; // 2 minutes (Hue max is much much higher, but this seems good.)
@@ -32,6 +33,18 @@ const Scene = class {
 
     get transitionRange() {
         return [this.transitionTime / 1000, this.maxTransitionTime / 1000];
+    }
+
+    get averageColorCSS() {
+        if (this.stages && this.stages.length) {
+            let hsl = this.stages.reduce((prev, curr) => { return { hue: prev.hue + curr.hue, sat: prev.sat + curr.sat, bri: prev.bri + curr.bri } });
+            hsl.hue = hsl.hue / this.stages.length / 65535;
+            hsl.sat = hsl.sat / this.stages.length / 254;
+            hsl.bri = hsl.bri / this.stages.length / 254;
+            const rgb = Utils.hslToRgb(hsl.hue,hsl.sat,hsl.bri);
+            return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5)`;
+        }
+        return `rgba(255,255,255,1)`;
     }
 
     clone() {

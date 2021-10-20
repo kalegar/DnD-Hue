@@ -15,6 +15,12 @@
     </v-row> -->
     <v-row>
       <v-col>
+        <h3 class="vecna-font">Global Brightness</h3>
+        <v-slider v-model="globalBrightness" min=0 max=100 v-on:change="pushGlobalBrightness"></v-slider>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
         <Scenes :lights="lights"/>
       </v-col>
     </v-row>
@@ -25,7 +31,8 @@
   import axios from 'axios';
   import {LightsService} from '../services/Lights.service';
   import {GroupsService} from '../services/Groups.service';
-import Scenes from './Scenes.vue';
+  import Scenes from './Scenes.vue';
+  import {GlobalService} from '../services/Global.service';
 
   export default {
   components: { Scenes },
@@ -52,6 +59,20 @@ import Scenes from './Scenes.vue';
         }).catch(err => {
           console.log(err);
         });
+      },
+      pushGlobalBrightness: function() {
+        GlobalService.setGlobalBrightness(this.globalBrightness / 100).then((success) => {
+          this.globalBrightness = Math.floor(success * 100);
+        },
+        err => console.log(err));
+      },
+      getGlobalBrightness: function() {
+        GlobalService.getGlobalBrightness().then((success) => {
+          this.globalBrightness = Math.floor(success * 100);
+        },
+        err => {
+          console.log(err);
+        })
       }
     },
 
@@ -59,12 +80,14 @@ import Scenes from './Scenes.vue';
       lightIndex: 1,
       light: false,
       lights: [],
-      groups: []
+      groups: [],
+      globalBrightness: 100
     }),
 
     mounted: function() {
       this.getLights();
       this.getGroups();
+      this.getGlobalBrightness();
     }
   }
 </script>

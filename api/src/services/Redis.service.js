@@ -1,10 +1,15 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 import redis from 'redis';
 
+const url = process.env.REDIS_ADDRESS || 'redis://localhost';
+
 const redisClient = redis.createClient({
-    url: process.env.REDIS_ADDRESS || 'redis://localhost',
+    url: url,
     retry_strategy: function(options) {
         if (options.error && options.error.code === "ECONNREFUSED") {
             // End reconnecting on a specific error and flush all commands with

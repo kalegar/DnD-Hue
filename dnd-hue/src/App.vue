@@ -15,14 +15,7 @@
           width="40"
         />
 
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
+        <h1 class="vecna-font">DnD Hue</h1>
       </div>
 
       <v-spacer></v-spacer>
@@ -54,3 +47,16 @@ export default {
   }),
 };
 </script>
+
+<style>
+@font-face {
+  font-family: "Vecna";
+  src: local("Vecna"),
+    url('./fonts/Vecna/VecnaBold.ttf') format("truetype");
+}
+
+.vecna-font {
+  font-family: "Vecna", Helvetica, Arial;
+}
+
+</style>

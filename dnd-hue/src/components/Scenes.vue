@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <v-row>
-            <h1>Scenes</h1>
+            <h1 class="vecna-font">Scenes</h1>
             <v-dialog
                 v-model="createSceneDialog"
                 persistent

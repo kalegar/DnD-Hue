@@ -1,9 +1,9 @@
 <template>
-    <v-card>
+    <v-card :color="(scene && activated) ? 'blue lighten-5' : 'white'">
         <v-card-title class="pb-0">
             <v-container no-gutters class="mt-n5 pb-0">
             <v-row no-gutters align="center">
-            <h2 v-if="!editing">{{scene.name}}</h2>
+            <h2 v-if="!editing" class="vecna-font">{{scene.name}}</h2>
             <v-text-field 
                 v-if="editing"
                 v-model="internalScene.name"
