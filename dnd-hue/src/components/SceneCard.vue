@@ -20,11 +20,10 @@
         </v-card-title>
         <v-card-text class="mt-n1">
             <v-container v-if="!editing">
-                <v-row no-gutters>
+                <v-fade-transition group class="row no-gutters" appear>
                     <v-col v-for="(stage, index) in scene.stages" v-bind:key="index">
                         <v-row no-gutters>
                         <v-sheet
-                            class="ml-2"
                             :color="stage.getRGBAString()"
                             width="24"
                             height="24"
@@ -32,7 +31,7 @@
                         ></v-sheet>
                         </v-row>
                     </v-col>
-                </v-row>
+                </v-fade-transition>
             </v-container>
             <v-container v-else>
                 <v-row align="start" class="mb-n8">
@@ -79,36 +78,45 @@
                         </v-row>
                     </v-col>
                 </v-row>
-                <v-row no-gutters>
+                <v-fade-transition group class="row no-gutters" mode="out-in" appear>
                     <v-col v-for="(stage, index) in internalScene.stages" v-bind:key="index">
-                        <v-row no-gutters>
-                            <v-col>
+  
+                        <v-sheet
+                            :color="stage.getRGBAString()"
+                            :width="selectedStage == index ? 32 : 24"
+                            :height="selectedStage == index ? 32 : 24"
+                            rounded="circle"
+                            @click="selectedStage = index"
+                            :elevation="selectedStage == index ? 6 : 0"
+                        ></v-sheet>
+                    </v-col>
+                </v-fade-transition>
+                <v-row v-if="selectedStage > -1" width="350">
+                    <v-col>
+                        <v-row no-gutters >
                             <v-text-field
-                            v-model="stage.name"
+                            v-model="internalScene.stages[selectedStage].name"
                             dense
                             outlined
+                            class="shrink"
+                            style="width: 200px;"
                             ></v-text-field>
-                            </v-col>
-                            <v-col cols="3">
                             <v-btn
                                 fab
                                 small
                                 class="mx-2"
-                                red
-                                @click="internalScene.stages.splice(index,1)"
+                                @click="$delete(internalScene.stages,selectedStage); selectedStage = (internalScene.stages.length ? 0 : -1)"
                             ><v-icon>mdi-delete</v-icon></v-btn>
-                            </v-col>
                         </v-row>
                         <v-row no-gutters>
-                            <v-col>
-                                <v-color-picker
-                                    dot-size="25"
-                                    mode="hsla"
-                                    hide-mode-switch
-                                    @update:color="stage.setColor($event)"
-                                    :value="stage.getHSLA()"
-                                ></v-color-picker>
-                            </v-col>
+                        <v-color-picker
+                            dot-size="25"
+                            mode="hsla"
+                            hide-mode-switch
+                            @update:color="internalScene.stages[selectedStage].setColor($event)"
+                            :value="internalScene.stages[selectedStage].getHSLA()"
+                            elevation=6
+                        ></v-color-picker>
                         </v-row>
                     </v-col>
                 </v-row>
@@ -124,15 +132,6 @@
                                 class="mt-10"
                                 v-on:change="updateTransitionRange()"
                             ></v-range-slider>
-                            <!-- <v-text-field
-                                v-model="internalScene.transitionTime"
-                                type='number'
-                                class="mt-n2 ml-1"
-                                dense
-                                outlined
-                                suffix='ms'
-                                :rules="[validation.minSize100]"
-                            ></v-text-field> -->
                     </v-col>
                 </v-row>
             </v-container>
@@ -220,6 +219,7 @@ export default {
             internalScene: new Scene(),
             newLight: null,
             transitionRange: [10,100],
+            selectedStage: -1,
             validation: {
                 minSize100: val => val >= 100 || 'Minimum of 100ms',
                 lightAlreadyAdded: val => {if (val == null) return true; for (const light of this.internalScene.lights) {if (light.index == val.index) {return 'Light already added.';}} return true;}
@@ -253,6 +253,9 @@ export default {
         startEditing: function() {
             this.internalScene = this.scene.clone();
             this.editing = true;
+            if (this.internalScene.stages && this.internalScene.stages.length) {
+                this.selectedStage = 0;
+            }
         },
         toggleEditing: function() {
             if (this.editing) {
@@ -279,6 +282,7 @@ export default {
         },
         addStage: function() {
             this.internalScene.stages.push(new Stage());
+            this.selectedStage = this.internalScene.stages.length - 1;
         },
         activate: function() {
             this.activating = true;

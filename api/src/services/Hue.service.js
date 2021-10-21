@@ -27,8 +27,6 @@ const HueService = class {
         const stage = scene.stages[Math.floor(Math.random() * scene.stages.length)];
         const time = (Math.random() * (Number(scene.maxTransitionTime) - Number(scene.transitionTime))) + Number(scene.transitionTime);
         const state = {"on": true, "bri": Math.max(1,Math.floor(Number(stage.bri) * this.globalBrightness)), "sat": stage.sat, "hue": stage.hue, "transitiontime": Math.max(1,Math.floor(time/100))};
-        console.log(state);
-        // console.log(`Loop ID: ${id}. Timeout: ${time}`);
         axios.put(`${baseURL}/${light.index}/state`, state);
         setTimeout(this.#loop.bind(this),time,id, scene,light);
     }
