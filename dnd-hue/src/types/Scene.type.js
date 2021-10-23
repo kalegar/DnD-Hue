@@ -11,6 +11,9 @@ const Scene = class {
     stages = [];
     transitionTime = MinTransitionTime + 1000;
     maxTransitionTime = MaxTransitionTime - 1000;
+    priority = 1;
+    mode = 0;
+    active = false;
     constructor() {
         this.id = null,
         this.name = '',
@@ -18,6 +21,8 @@ const Scene = class {
         this.stages = [],
         this.transitionTime = MinTransitionTime + 1000;
         this.maxTransitionTime = MaxTransitionTime - 1000;
+        this.priority = 1;
+        this.mode = 0;
     }
 
     set transitionTime(transitionTime) {
@@ -55,6 +60,9 @@ const Scene = class {
         scene.stages = this.stages.map(a => {return Object.assign(new Stage(), {...a})}); // Deep clone stages.
         scene.transitionTime = this.transitionTime;
         scene.maxTransitionTime = this.maxTransitionTime;
+        scene.priority = this.priority;
+        scene.mode = this.mode;
+        scene.active = this.active;
         return scene;
     }
 

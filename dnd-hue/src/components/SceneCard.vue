@@ -1,5 +1,5 @@
 <template>
-    <v-card :color="(scene && activated) ? 'blue lighten-5' : 'white'">
+    <v-card :color="(internalScene && internalScene.active) ? 'blue lighten-5' : 'white'" @click="cardClicked()" :ripple="!editing">
         <v-card-title class="pb-0">
             <v-container no-gutters class="mt-n5 pb-0">
             <v-row no-gutters align="center">
@@ -7,19 +7,29 @@
             <v-text-field 
                 v-if="editing"
                 v-model="internalScene.name"
+                label="Name"
+            ></v-text-field>
+            <v-spacer></v-spacer>
+            <v-text-field
+                type='number'
+                v-if="editing"
+                label="Priority"
+                v-model="internalScene.priority"
             ></v-text-field>
             <v-spacer></v-spacer>
             <v-switch
-                :value="activated"
+                v-model="internalScene.active"
                 :loading="activating"
                 :disabled="activating || editing"
                 v-on:change="$event ? activate() : deactivate();"
+                @click.stop
             ></v-switch>
             </v-row>
             </v-container>
         </v-card-title>
         <v-card-text class="mt-n1">
-            <v-container v-if="!editing">
+            <v-fade-transition>
+            <v-container v-show="!editing">
                 <v-fade-transition group class="row no-gutters" appear>
                     <v-col v-for="(stage, index) in scene.stages" v-bind:key="index">
                         <v-row no-gutters>
@@ -33,7 +43,9 @@
                     </v-col>
                 </v-fade-transition>
             </v-container>
-            <v-container v-else>
+            </v-fade-transition>
+            <v-expand-transition>
+            <v-container v-show="editing">
                 <v-row align="start" class="mb-n8">
                     <v-col cols="12">
                     <h3>Lights:</h3>
@@ -122,7 +134,7 @@
                 </v-row>
                 <v-row>
                     <v-col cols="12">
-                            <h3 v-if="editing">Transition Time:</h3>
+                            <h3>Transition Time:</h3>
                             <v-range-slider
                                 v-model="transitionRange"
                                 min=1
@@ -135,8 +147,10 @@
                     </v-col>
                 </v-row>
             </v-container>
+            </v-expand-transition>
         </v-card-text>
         <v-card-actions>
+            <p v-if="!editing" class="vecna-font text--secondary">Priority: {{scene.priority}}</p>
             <v-spacer></v-spacer>
             <v-fab-transition>
             <v-btn
@@ -145,14 +159,14 @@
                 small
                 :loading="saving"
                 v-if="editing"
-                @click="save"
+                @click.stop="save"
             ><v-icon>mdi-content-save</v-icon></v-btn>
             </v-fab-transition>
             <v-fab-transition>
             <v-btn
                 fab
                 small
-                @click="toggleEditing"
+                @click.stop="toggleEditing"
                 :disabled="saving"
             ><v-icon v-if="!editing">mdi-pencil</v-icon><v-icon v-else>mdi-cancel</v-icon></v-btn>
             </v-fab-transition>
@@ -162,7 +176,8 @@
                 fab
                 small
                 :disabled="saving"
-                @click="$emit('delete')"
+                v-if="editing"
+                @click.stop="$emit('delete')"
             ><v-icon>mdi-delete</v-icon></v-btn>
             </v-fab-transition>
         </v-card-actions>
@@ -203,6 +218,7 @@ export default {
         },
         activated: {
             handler: function() {
+                console.log('handler')
                 if (this.activated) {
                     this.activating = false;
                 }
@@ -234,7 +250,7 @@ export default {
             ScenesService.updateScene(this.internalScene).then(() => {
                 this.$emit('save', this.internalScene);
                 if (this.activated) {
-                    this.$emit('deactivate');
+                    this.deactivate();
                 }
             })
             .catch((err) => {
@@ -284,15 +300,35 @@ export default {
             this.internalScene.stages.push(new Stage());
             this.selectedStage = this.internalScene.stages.length - 1;
         },
-        activate: function() {
-            this.activating = true;
-            this.$emit('activate');
-        },
-        deactivate: function() {
-            this.$emit('deactivate');
-        },
         updateTransitionRange: function() {
             this.internalScene.transitionRange = this.transitionRange;
+        },
+        activate: function() {
+            this.activating = true;
+            ScenesService.activateScene(this.internalScene.id).then((activeScenes) => {
+                console.log('activated');
+                this.activating = false;
+                this.internalScene.active = true;
+                this.$emit('update-active',activeScenes);
+            },
+            rej => {
+                console.log(rej);
+                this.activating = false;
+            });
+        },
+        deactivate: function() {
+            ScenesService.deactivateScene(this.internalScene.id).then((activeScenes) => {
+                this.internalScene.active = false;
+                this.$emit('update-active',activeScenes);
+            });
+        },
+        cardClicked: function() {
+            if (this.editing) return;
+            if (this.internalScene.active) {
+                this.deactivate();
+            } else { 
+                this.activate();
+            }
         }
     }
 }

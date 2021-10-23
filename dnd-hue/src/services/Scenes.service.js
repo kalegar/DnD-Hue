@@ -89,7 +89,7 @@ export const ScenesService = {
                     reject(res.statusText);
                     return;
                 }
-                resolve(res.data.message);
+                resolve(res.data);
             }).catch(err => {
                 reject(err);
             })
@@ -105,7 +105,7 @@ export const ScenesService = {
                     reject(res.statusText);
                     return;
                 }
-                resolve(res.data.message);
+                resolve(res.data);
             }).catch(err => {
                 reject(err);
             })

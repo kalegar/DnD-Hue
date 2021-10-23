@@ -20,7 +20,11 @@ router.get('/', async (req, res) => {
                 redisClient.mget(reply,(err1, reply1) => {
                     if (err1) throw err1;
                     if (reply1) {
-                        res.status(200).json(reply1.map(val => JSON.parse(val)));
+                        res.status(200).json(reply1.map(val => {
+                            const scene = JSON.parse(val);
+                            scene.active = HueService.isSceneActive(scene.id);
+                            return scene;
+                        }));
                     }
                 })
             } else {
@@ -39,7 +43,9 @@ router.get("/:id", async(req, res) => {
         redisClient.get(`${KEY_PREFIX}${req.params.id}`, (err, reply) => {
             if (err) throw err;
             if (reply) {
-                res.status(200).json(JSON.parse(reply));
+                const scene = JSON.parse(reply);
+                scene.active = HueService.isSceneActive(req.params.id);
+                res.status(200).json(scene);
             }else{
                 res.status(404).send();
             }
@@ -118,10 +124,17 @@ router.post('/:id/activate', async(req, res) => {
         redisClient.get(`${KEY_PREFIX}${req.params.id}`, (err, reply) => {
             if (err) throw err;
             if (reply) {
-                HueService.deactivate();
-                res.status(200).json({message: 'Activated'});
+                
                 const scene = JSON.parse(reply);
-                HueService.activateScene(scene);
+                scene.active = true;
+
+                redisClient.set(`${KEY_PREFIX}${req.params.id}`, JSON.stringify(scene), (err1) => {
+                    if (err1) throw err1;
+                })
+
+                HueService.activateScene(scene).then(success => {
+                    res.status(200).json(success);
+                }, failure => { if (failure) throw failure;});
             }else{
                 res.status(404).send();
             }
@@ -137,8 +150,16 @@ router.post('/:id/deactivate', async(req, res) => {
         redisClient.get(`${KEY_PREFIX}${req.params.id}`, (err, reply) => {
             if (err) throw err;
             if (reply) {
-                HueService.deactivate();
-                res.status(200).json({message: 'Dectivated'});
+                const scene = JSON.parse(reply);
+                scene.active = false;
+
+                redisClient.set(`${KEY_PREFIX}${req.params.id}`, JSON.stringify(scene), (err1) => {
+                    if (err1) throw err1;
+                })
+
+                HueService.deactivate(scene).then(success => {
+                    res.status(200).json(success);
+                }, failure => { if (failure) throw failure;});
             }else{
                 res.status(404).send();
             }

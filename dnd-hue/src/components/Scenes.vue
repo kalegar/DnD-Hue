@@ -49,8 +49,8 @@
             </v-dialog>
         </v-row>
         <v-row>
-            <v-col v-for="scene in scenes" v-bind:key="scene.name" cols="12" md="6">
-                <scene-card v-on:delete="confirmDeleteScene(scene)" v-on:save="Object.assign(scene,$event.clone());" :scene="scene" :lights="lightItems" v-on:activate="activateScene(scene.id)" v-on:deactivate="deactivateScene(scene.id)" :activated="activeScene == scene.id"></scene-card>
+            <v-col v-for="(scene) in scenes" v-bind:key="scene.name" cols="12" md="6">
+                <scene-card v-on:delete="confirmDeleteScene(scene)" v-on:save="Object.assign(scene,$event.clone());" v-on:update-active="updateActiveScenes($event)" :scene="scene" :lights="lightItems"></scene-card>
             </v-col>
         </v-row>
         <v-dialog
@@ -111,8 +111,7 @@ export default {
             createSceneDialog: false,
             deleteSceneDialog: false,
             toDeleteScene: null,
-            newScene: new Scene(),
-            activeScene: null
+            newScene: new Scene()
         };
     },
 
@@ -156,18 +155,14 @@ export default {
         resetNewScene: function() {
             this.newScene = new Scene()
         },
-        activateScene: function(id) {
-            ScenesService.activateScene(id).then(() => {
-                this.activeScene = id;
-            },
-            rej => {
-                console.log(rej);
-            });
-        },
-        deactivateScene: function(id) {
-            ScenesService.deactivateScene(id);
-            if (this.activeScene == id) {
-                this.activeScene = null;
+        updateActiveScenes(activeScenes) {
+            console.log('update active');
+            for (let i = 0; i < this.scenes.length; i++) {
+                if (activeScenes.includes(this.scenes[i].id)) {
+                    this.scenes[i].active = true;
+                }else{
+                    this.scenes[i].active = false;
+                }
             }
         }
     },
