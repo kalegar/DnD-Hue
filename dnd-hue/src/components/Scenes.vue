@@ -164,12 +164,18 @@ export default {
                     this.scenes[i].active = false;
                 }
             }
+        },
+        getActiveScenes() {
+            ScenesService.getActiveScenes().then(success => {
+                this.updateActiveScenes(success);
+            }, failure => console.log(failure));
         }
     },
 
     mounted: function() {
         this.resetNewScene();
         this.getScenes();
+        setInterval(this.getActiveScenes,1000);
     }
 }
 </script>

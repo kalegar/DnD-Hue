@@ -38,6 +38,7 @@
                             width="24"
                             height="24"
                             rounded="circle"
+                            elevation="4"
                         ></v-sheet>
                         </v-row>
                     </v-col>
@@ -78,6 +79,17 @@
                     </v-col>
                 </v-row>
                 <v-row>
+                    <v-select
+                        v-model="scene.mode"
+                        :items="sceneModes"
+                        label="Scene Mode"
+                    ></v-select>
+                    <v-checkbox
+                        v-model="scene.looping"
+                        label="Looping"
+                    ></v-checkbox>
+                </v-row>
+                <v-row>
                     <v-col cols="12">
                         <v-row no-gutters>
                             <h3>Stages:</h3>
@@ -99,7 +111,7 @@
                             :height="selectedStage == index ? 32 : 24"
                             rounded="circle"
                             @click="selectedStage = index"
-                            :elevation="selectedStage == index ? 6 : 0"
+                            :elevation="selectedStage == index ? 8 : 4"
                         ></v-sheet>
                     </v-col>
                 </v-fade-transition>
@@ -123,6 +135,7 @@
                         <v-row no-gutters>
                         <v-color-picker
                             dot-size="25"
+                            :width="$vuetify.breakpoint.mobile ? 250 : 300"
                             mode="hsla"
                             hide-mode-switch
                             @update:color="internalScene.stages[selectedStage].setColor($event)"
@@ -130,11 +143,36 @@
                             elevation=6
                         ></v-color-picker>
                         </v-row>
+                        <v-row no-gutters>
+                            <v-checkbox
+                                label="Custom Stage Transition Time"
+                                v-model="internalScene.stages[selectedStage].customTransitionTime"
+                            ></v-checkbox>
+                        </v-row>
+                        <v-row no-gutters v-if="internalScene.stages[selectedStage].customTransitionTime">
+                            <v-slider
+                                label="Transition Time"
+                                v-model="internalScene.stages[selectedStage].transitionTime"
+                                min=1
+                                max=1200
+                            >
+                                <template v-slot:append>
+                                    <v-text-field
+                                        v-model="internalScene.stages[selectedStage].transitionTime"
+                                        class="mt-0 pt-0"
+                                        hide-details
+                                        single-line
+                                        type="number"
+                                        style="width: 60px"
+                                    ></v-text-field>
+                                </template>
+                            </v-slider>
+                        </v-row>
                     </v-col>
                 </v-row>
                 <v-row>
                     <v-col cols="12">
-                            <h3>Transition Time:</h3>
+                            <h3>Scene Transition Time:</h3>
                             <v-range-slider
                                 v-model="transitionRange"
                                 min=1
@@ -239,7 +277,11 @@ export default {
             validation: {
                 minSize100: val => val >= 100 || 'Minimum of 100ms',
                 lightAlreadyAdded: val => {if (val == null) return true; for (const light of this.internalScene.lights) {if (light.index == val.index) {return 'Light already added.';}} return true;}
-            }
+            },
+            sceneModes: [
+                { text: 'Random', value: 0 },
+                { text: 'Sequential', value: 1 }
+            ]
         }
     },
 

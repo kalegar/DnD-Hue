@@ -110,6 +110,22 @@ export const ScenesService = {
                 reject(err);
             })
         });
+    },
+
+    getActiveScenes: function() {
+        return new Promise((resolve, reject) => {
+            const url = `${baseURL}/?active`;
+            axios.get(url)
+            .then(res => {
+                if (res.status != 200) {
+                    reject(res.statusText);
+                    return;
+                }
+                resolve(res.data);
+            }).catch(err => {
+                reject(err);
+            })
+        });
     }
 
 }

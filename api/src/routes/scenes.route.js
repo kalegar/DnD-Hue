@@ -14,6 +14,10 @@ const router = Router();
 
 router.get('/', async (req, res) => {
     try {
+        if ('active' in req.query) {
+            res.status(200).json(HueService.getActiveScenes());
+            return;
+        }
         redisClient.keys(`${KEY_PREFIX}*`, (err, reply) => {
             if (err) throw err;
             if (reply && reply.length) {

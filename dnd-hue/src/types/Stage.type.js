@@ -6,6 +6,8 @@ const Stage = class {
     hue = 0;
     sat = 0;
     bri = 1;
+    transitionTime = 10; //transition time in 100s of ms
+    customTransitionTime = false;
     #maxBrightness = 254;
     #maxHue = 65535;
     #maxSaturation = 254;
@@ -18,6 +20,8 @@ const Stage = class {
         this.hue = this.#minHue;
         this.sat = this.#minSaturation;
         this.bri = this.#minBrightness;
+        this.transitionTime = 0;
+        this.customTransitionTime = false;
     }
 
     setColor(color) {
@@ -71,6 +75,8 @@ const Stage = class {
         stage.hue = this.hue;
         stage.sat = this.sat;
         stage.bri = this.bri;
+        stage.transitionTime = this.transitionTime;
+        stage.customTransitionTime = this.customTransitionTime;
         return stage;
     }
 

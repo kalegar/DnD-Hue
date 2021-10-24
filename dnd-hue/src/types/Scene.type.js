@@ -13,6 +13,7 @@ const Scene = class {
     maxTransitionTime = MaxTransitionTime - 1000;
     priority = 1;
     mode = 0;
+    looping = true;
     active = false;
     constructor() {
         this.id = null,
@@ -23,6 +24,7 @@ const Scene = class {
         this.maxTransitionTime = MaxTransitionTime - 1000;
         this.priority = 1;
         this.mode = 0;
+        this.looping = true;
     }
 
     set transitionTime(transitionTime) {
@@ -63,6 +65,7 @@ const Scene = class {
         scene.priority = this.priority;
         scene.mode = this.mode;
         scene.active = this.active;
+        scene.looping = this.looping;
         return scene;
     }
 

@@ -15,7 +15,7 @@ router.post('/brightness', async(req, res) => {
     try {
         const obj = req.body;
         if (obj !== null && 'brightness' in obj) {
-            HueService.globalBrightness = obj.brightness;
+            HueService.constructor.globalBrightness = obj.brightness;
             res.status(200).json({ brightness: HueService.constructor.globalBrightness });
             return;
         }

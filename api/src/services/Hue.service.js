@@ -43,21 +43,33 @@ const HueLight = class {
             this.cancel();
             return;
         }
-        const time = timeOverride !== 0 ? timeOverride : (Math.random() * (Number(this.scene.maxTransitionTime) - Number(this.scene.transitionTime))) + Number(this.scene.transitionTime);
+        let continueLoop = true;
+        let stage;
         if (this.scene.mode == 0) { //Random
-            const stage = this.scene.stages[Math.floor(Math.random() * this.scene.stages.length)];
-            const state = {"on": true, "bri": Math.max(1,Math.floor(Number(stage.bri) * HueService.globalBrightness)), "sat": stage.sat, "hue": stage.hue, "transitiontime": Math.max(1,Math.floor(time/100))};
-            // console.log(`Push Index ${this.index} : ${time / 1000.0}s`);
-            axios.put(`${baseURL}/${this.index}/state`, state);
+            stage = this.scene.stages[Math.floor(Math.random() * this.scene.stages.length)];
         }else if (this.scene.mode == 1) { //Sequential
-            const stage = this.scene.stages[this.currentStage];
-            this.currentStage ++;
-            if (this.currentStage > this.scene.stages.length) this.currentStage = 0;
-            const state = {"on": true, "bri": Math.max(1,Math.floor(Number(stage.bri) * HueService.globalBrightness)), "sat": stage.sat, "hue": stage.hue, "transitiontime": Math.max(1,Math.floor(time/100))};
-            // console.log(`Push Index ${this.index} : ${time / 1000.0}s`);
-            axios.put(`${baseURL}/${this.index}/state`, state);
+            stage = this.scene.stages[this.currentStage];
         }
-        this.#timerId = setTimeout(this.#mainLoop.bind(this),time);
+
+        const time = timeOverride !== 0 ? timeOverride : (stage.customTransitionTime ? Number(stage.transitionTime) * 100 : (Math.random() * (Number(this.scene.maxTransitionTime) - Number(this.scene.transitionTime))) + Number(this.scene.transitionTime));
+
+        this.currentStage ++;
+        if (this.currentStage >= this.scene.stages.length) {
+            if (this.scene.looping) {
+                this.currentStage = 0;
+            }else{
+                continueLoop = false;
+            }
+        }
+        const state = {"on": true, "bri": Math.max(1,Math.floor(Number(stage.bri) * HueService.globalBrightness)), "sat": stage.sat, "hue": stage.hue, "transitiontime": Math.max(1,Math.floor(time/100))};
+        // console.log(`Push Index ${this.index} : ${time / 1000.0}s`);
+        axios.put(`${baseURL}/${this.index}/state`, state);
+        if (continueLoop) {
+            this.#timerId = setTimeout(this.#mainLoop.bind(this),time);
+        } else {
+            service.doDeactivateLight(this);
+            service.updateActiveScenes();
+        }
     }
 }
 
@@ -94,7 +106,7 @@ const HueService = class {
         });
     }
 
-    #updateActiveScenes() {
+    updateActiveScenes() {
         const scenes = [];
         this.#activeScenes = [];
         for (const light of this.#lights) {
@@ -108,11 +120,15 @@ const HueService = class {
 
     #lightHasAnotherActiveScene(light) {
         const currentSceneId = light.scene !== null ? light.scene.id : '';
+        let highestPriorityScene = null;
         for (const scene of this.#activeScenes) {
-            if (scene.id !== light.scene.id && scene.lights.reduce((prev, curr) =>  prev || String(curr.index) == String(light.index),false)) 
-                return scene;
+            if (scene.id !== light.scene.id && scene.lights.reduce((prev, curr) =>  prev || String(curr.index) == String(light.index),false)) {
+                if ((highestPriorityScene == null) || (scene.priority > highestPriorityScene.priority)) {
+                    highestPriorityScene = scene;
+                }
+            }
         }
-        return null;
+        return highestPriorityScene;
     }
 
     activateScene(scene) {
@@ -133,7 +149,7 @@ const HueService = class {
                         }
                     }
                 }
-                this.#updateActiveScenes();
+                this.updateActiveScenes();
                 resolve(this.#activeScenes.map(sce => sce.id));
             } catch (err) {
                 reject(err);
@@ -141,29 +157,37 @@ const HueService = class {
         });
     }
 
+    doDeactivateLight(light) {
+        light.cancel();
+        const otherScene = this.#lightHasAnotherActiveScene(light);
+        if (otherScene !== null) {
+            light.scene = otherScene;
+            console.log(`Light ${light.index} had another active scene. Switching...`);
+            light.restart();
+            
+        }else{
+            light.reset();
+        }
+    }
+
     deactivate(scene) {
         return new Promise((resolve, reject) => {
             try {
                 for (const light of this.#lights) {
                     if (light.scene !== null && light.scene.id == scene.id) {
-                        light.cancel();
-                        const otherScene = this.#lightHasAnotherActiveScene(light);
-                        if (otherScene !== null) {
-                            light.scene = otherScene;
-                            console.log(`Light ${light.index} had another active scene. Switching...`);
-                            light.restart();
-                            
-                        }else{
-                            light.reset();
-                        }
+                        this.doDeactivateLight(light)
                     }
                 }
-                this.#updateActiveScenes();
+                this.updateActiveScenes();
                 resolve(this.#activeScenes.map(sce => sce.id));
             } catch (err) {
                 reject(err);
             }
         });
+    }
+
+    getActiveScenes() {
+        return this.#activeScenes.map(sce => sce.id);
     }
 
     isSceneActive(id) {
