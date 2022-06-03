@@ -10,12 +10,12 @@
           alt="Vuetify Logo"
           class="shrink mr-2"
           contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
+          src="/images/dnd-logo.png"
           transition="scale-transition"
           width="40"
         />
 
-        <h1 class="vecna-font">DnD Hue</h1>
+        <h1 class="vecna-font">D&D Hue</h1>
       </div>
 
       <v-spacer></v-spacer>
@@ -26,7 +26,7 @@
       ></v-switch>
     </v-app-bar>
 
-    <v-main>
+    <v-main class="background">
       <Dashboard/>
     </v-main>
   </v-app>
@@ -59,4 +59,11 @@ export default {
   font-family: "Vecna", Helvetica, Arial;
 }
 
+</style>
+
+<style scoped>
+.background {
+  background-image: url('/images/background.jpg');
+  background-size: cover;
+}
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <v-card :color="(internalScene && internalScene.active) ? 'blue lighten-5' : 'white'" @click="cardClicked()" :ripple="!editing">
+    <v-card :color="(internalScene && internalScene.active) ? 'blue lighten-5' : 'white'" @click="cardClicked()" :ripple="!editing" shaped elevation="4">
         <v-card-title class="pb-0">
             <v-container no-gutters class="mt-n5 pb-0">
             <v-row no-gutters align="center">

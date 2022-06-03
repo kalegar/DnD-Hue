@@ -16,12 +16,17 @@
     <v-row>
       <v-col>
         <h3 class="vecna-font">Global Brightness</h3>
-        <v-slider v-model="globalBrightness" min=0 max=100 v-on:change="pushGlobalBrightness"></v-slider>
+        <v-slider v-model="globalBrightness" min=0 max=100 v-on:change="pushGlobalBrightness" color="accent"></v-slider>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
         <Scenes :lights="lights"/>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <music/>
       </v-col>
     </v-row>
   </v-container>
@@ -33,9 +38,10 @@
   import {GroupsService} from '../services/Groups.service';
   import Scenes from './Scenes.vue';
   import {GlobalService} from '../services/Global.service';
+import Music from './Music.vue';
 
   export default {
-  components: { Scenes },
+  components: { Scenes, Music },
     name: 'Dashboard',
 
     computed: {
@@ -91,3 +97,9 @@
     }
   }
 </script>
+
+<style scoped>
+h1, h2, h3, h4 {
+  color: white;
+}
+</style>

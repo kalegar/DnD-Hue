@@ -13,7 +13,8 @@
                         class="mx-2 mt-n1"
                         v-bind="attrs"
                         v-on="on"
-                    ><v-icon>mdi-plus</v-icon></v-btn>
+                        color="primary"
+                    ><v-icon large>mdi-plus</v-icon></v-btn>
                 </template>
                 <v-card>
                     <v-card-title>
@@ -179,3 +180,9 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+h1, h2, h3, h4 {
+  color: white;
+}
+</style>
