@@ -6,6 +6,7 @@ const statik = require('node-static');
 import redisClient from "../services/Redis.service";
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+const path = require('path');
 
 const KEY_PREFIX = 'MUSIC:';
 
@@ -65,10 +66,12 @@ router.post('/', upload.single("file"), async(req, res) => {
         const uuid = uuidv4();
         const filename = req.file.filename;
         const title = req.body.title;
+        const format = path.extname(req.file.originalname).split('.').join('').toLowerCase();
         const data = {
             id: uuid,
             filename: filename,
-            title: title
+            title: title,
+            format: format
         }
         redisClient.set(`${KEY_PREFIX}${uuid}`, JSON.stringify(data), (err, reply) => {
             if (err) throw err;

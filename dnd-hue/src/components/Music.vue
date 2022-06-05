@@ -65,6 +65,7 @@
 
 <script>
 import {MusicService} from '../services/Music.service';
+import MusicFile from '../types/MusicFile.type';
 import MusicCard from './MusicCard.vue';
 export default {
   components: { MusicCard },
@@ -83,7 +84,7 @@ export default {
     methods: {
         getMusic: function() {
             MusicService.getMusic().then(res => {
-                this.music = res;
+                this.music = res.map(obj => MusicFile.from(obj))
                 console.log(this.music);
             },
             rej => console.log(rej));

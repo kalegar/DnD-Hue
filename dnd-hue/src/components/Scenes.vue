@@ -157,7 +157,6 @@ export default {
             this.newScene = new Scene()
         },
         updateActiveScenes(activeScenes) {
-            console.log('update active');
             for (let i = 0; i < this.scenes.length; i++) {
                 if (activeScenes.includes(this.scenes[i].id)) {
                     this.scenes[i].active = true;
