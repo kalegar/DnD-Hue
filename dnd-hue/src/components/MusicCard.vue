@@ -1,11 +1,15 @@
 <template>
     <v-card>
+        <v-hover v-slot="{ hover }" close-delay="100">
         <v-progress-linear
             :indeterminate="!music.loaded"
             :active="loading || music.loaded"
             :value="trackPos"
-            height="6"
+            :height="hover ? 16 : 6"
+            @click="trackBarClick"
+            ref="trackbar"
         ></v-progress-linear>
+        </v-hover>
         <v-card-title class="pb-0">
             <v-container no-gutters class="mt-n5 pb-0">
             <v-row no-gutters align="center">
@@ -14,38 +18,44 @@
             <v-btn
                 icon
                 small
-                @click="togglePlayPause()"
+                @click.stop="togglePlayPause()"
                 :loading="loading && !music.loaded"
             ><v-icon v-if="!music.playing">mdi-play-circle-outline</v-icon><v-icon v-else>mdi-pause-circle-outline</v-icon></v-btn>
             <v-btn
                 icon
                 small
-                @click="toggleLoop()"
+                @click.stop="toggleLoop()"
                 :color="music.loop ? 'green' : ''"
             ><v-icon>mdi-sync</v-icon></v-btn>
             <v-btn
                 v-if="!editing"
                 icon
                 small
-                @click="edit()"
+                @click.stop="edit()"
             ><v-icon>mdi-pencil</v-icon></v-btn>
             <v-btn
                 v-if="editing"
                 icon
                 small
-                @click="save()"
+                @click.stop="save()"
             ><v-icon>mdi-content-save</v-icon></v-btn>
             <v-btn
                 v-if="editing"
                 icon
                 small
-                @click="cancel()"
+                @click.stop="deleteMusic()"
+            ><v-icon>mdi-delete</v-icon></v-btn>
+            <v-btn
+                v-if="editing"
+                icon
+                small
+                @click.stop="cancel()"
             ><v-icon>mdi-cancel</v-icon></v-btn>
             </v-row>
             </v-container>
             
         </v-card-title>
-        <v-container v-if="music.loaded">
+        <v-container>
             <v-row no-gutters>
                 <v-col>
                 <v-slider
@@ -54,6 +64,7 @@
                     step=0.1
                     label="Volume"
                     v-model="music.volume"
+                    @click.stop
                 ></v-slider>
                 </v-col>
             </v-row>
@@ -90,7 +101,10 @@ export default {
     },
     methods: {
         togglePlayPause: function() {
-            this.loading = true;
+            if (!this.music.loaded) {
+                this.loading = true;
+                this.music.afterLoad = () => {this.loading = false;}
+            }
             this.music.toggle();
             this.startTrackingPosition();
         },
@@ -98,7 +112,7 @@ export default {
             this.music.loop = !this.music.loop;
         },
         cardClicked: function() {
-
+            this.togglePlayPause();
         },
         edit: function() {
             if (this.editing) return;
@@ -109,6 +123,10 @@ export default {
         },
         save: function() {
             this.editing = false;
+        },
+        deleteMusic: function() {
+            this.music.stop();
+            this.$emit('delete');
         },
         startTrackingPosition: function() {
             if (this.trackInterval !== null) {
@@ -123,6 +141,13 @@ export default {
             if (this.trackInterval !== null) {
                 clearInterval(this.trackInterval);
             }
+        },
+        trackBarClick: function(event) {
+            let offsets = event.target.getBoundingClientRect();
+            console.log(this.$refs.trackbar);
+            let seekPos = (event.pageX - offsets.left) / this.$refs.trackbar.$el.clientWidth;
+            console.log(seekPos);
+            this.music.seek(seekPos);
         }
     }
 }

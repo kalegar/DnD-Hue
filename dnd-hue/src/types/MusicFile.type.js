@@ -16,18 +16,18 @@ const MusicFile = class {
     filename = '';
     data = null;
     sound = null;
-    soundId = null;
     format = 'mp3';
     #loaded = false;
+    #internalVolume = 1.0;
+    afterLoad = null;
     constructor() {
         this.id = null;
         this.title = '';
         this.filename = '';
         this.data = null;
         this.sound = null;
-        this.soundId = null;
         this.format = 'mp3';
-        this.loop = false;
+        this.afterLoad = null;
     }
 
     #requiresSound() {
@@ -39,9 +39,11 @@ const MusicFile = class {
             this.sound = new Howl({
                 src: [`${BASE_API_URL}/${this.id}` ],
                 format: [this.format],
+                volume: this.#internalVolume,
+                html5: false,
                 onloaderror: onLoadError,
                 onplayerror: onPlayError,
-                onload: () => {this.#loaded = true},
+                onload: () => {this.#loaded = true; if (this.afterLoad !== null) {this.afterLoad()}},
             });
             console.log('Created sound for ' + this.title);
         }
@@ -66,18 +68,19 @@ const MusicFile = class {
 
     get volume() {
         if (this.sound == null) {
-            return 0;
+            return this.#internalVolume;
         }else{
             return this.sound.volume();
         }
     }
 
     set volume(vol) {
-        this.#requiresSound();
+        this.#internalVolume = vol;
         if (this.sound == null) {
             return;
+        }else{
+            this.sound.volume(vol);
         }
-        this.sound.volume(vol);
     }
 
     get loaded() {
@@ -92,9 +95,6 @@ const MusicFile = class {
         if (this.sound == null) {
             return 0;
         }
-        if (this.soundId == null) {
-            return 0;
-        }
         if (this.sound.duration() == 0) {
             return 0;
         }
@@ -106,19 +106,22 @@ const MusicFile = class {
         if (this.sound == null) {
             return false;
         }
-        if (this.soundId == null) {
-            return false;
-        }
-        return this.sound.playing(this.soundId);
+        return this.sound.playing();
     }
 
     play() {
         this.#requiresSound();
-        if (this.soundId !== null) {
-            this.sound.stop(this.soundId);
+        if (this.sound.playing()) {
+            return;
         }
-        this.soundId = this.sound.play();
-        return this.soundId;
+        this.sound.play();
+    }
+
+    stop() {
+        if (this.sound == null) {
+            return;
+        }
+        this.sound.stop();
     }
 
     toggle() {
@@ -126,15 +129,20 @@ const MusicFile = class {
             this.play();
             return;
         }
-        if (this.soundId == null) {
-            return;
-        }
-        if (this.sound.playing(this.soundId)) {
-            this.sound.pause(this.soundId);
+        if (this.sound.playing()) {
+            this.sound.pause();
         } else {
-            this.sound.play(this.soundId)
+            this.sound.play();
         }
         
+    }
+
+    seek(pos) {
+        if (this.sound == null) {
+            return;
+        }
+        let val = Math.max(0.0,Math.min(pos,1.0));
+        this.sound.seek(this.sound.duration() * val);
     }
 
 

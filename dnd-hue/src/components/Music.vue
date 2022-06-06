@@ -57,9 +57,36 @@
         </v-row>
         <v-row>
             <v-col v-for="(file) in music" :key="file.id">
-                <music-card :music=file></music-card>
+                <music-card :music="file" v-on:delete="confirmDeleteMusic(file)"></music-card>
             </v-col>
         </v-row>
+        <v-dialog
+            v-model="deleteMusicDialog"
+            persistent
+            max-width="290"
+        >
+            <v-card>
+                <v-card-title class="text-h5">
+                    Confirm Deletion
+                </v-card-title>
+                <v-card-text v-if="toDeleteMusic">
+                    Are you sure you want to delete {{toDeleteMusic.title}}?
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        color="blue darken-1"
+                        text
+                        @click="deleteMusicDialog = false; toDeleteMusic = null;"
+                    >Cancel</v-btn>
+                    <v-btn
+                        color="red darken-1"
+                        text
+                        @click="deleteMusic(toDeleteMusic.id)"
+                    >Delete</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -79,6 +106,8 @@ export default {
                 title: ''
             },
             music: [],
+            deleteMusicDialog: false,
+            toDeleteMusic: null
         }
     },
     methods: {
@@ -107,6 +136,20 @@ export default {
                 title: ''
             }
         },
+        confirmDeleteMusic: function(musicFile) {
+            this.toDeleteMusic = musicFile;
+            this.deleteMusicDialog = true;
+        },
+        deleteMusic: function(musicFileId) {
+            MusicService.deleteMusic(musicFileId).then(() => {
+                this.deleteMusicDialog = false;
+                this.getMusic();
+            },
+            rej => {
+                console.log(rej);
+                this.deleteMusicDialog = false;
+            })
+        }
     },
     mounted: function() {
         this.getMusic();

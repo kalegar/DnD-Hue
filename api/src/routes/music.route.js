@@ -7,6 +7,7 @@ import redisClient from "../services/Redis.service";
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 const path = require('path');
+const fs = require('fs');
 
 const KEY_PREFIX = 'MUSIC:';
 
@@ -42,10 +43,8 @@ router.get('/', async(req, res) => {
 });
 
 router.get('/:musicID', async(req, res) => {
-    
-    const musicID = req.params.musicID;
-
     try {
+        const musicID = req.params.musicID;
         redisClient.get(`${KEY_PREFIX}${musicID}`, (err, reply) => {
             if (err) throw err;
             if (reply) {
@@ -65,7 +64,7 @@ router.post('/', upload.single("file"), async(req, res) => {
     try {
         const uuid = uuidv4();
         const filename = req.file.filename;
-        const title = req.body.title;
+        const title = req.body.title || 'New Music File';
         const format = path.extname(req.file.originalname).split('.').join('').toLowerCase();
         const data = {
             id: uuid,
@@ -81,6 +80,40 @@ router.post('/', upload.single("file"), async(req, res) => {
                 res.status(400).json({message: 'Malformed request'});
             }
         });
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.delete('/:musicID', async(req, res) => {
+    try {
+        const musicID = req.params.musicID;
+        redisClient.get(`${KEY_PREFIX}${musicID}`, (err, reply) => {
+            if (err) throw err;
+            if (reply) {
+                const data = JSON.parse(reply);
+
+                fs.unlink('music/'+data.filename, err => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+
+                redisClient.del(`${KEY_PREFIX}${musicID}`, (err, reply) => {
+                    if (err) throw err;
+                    if (reply > 0) {
+                        res.status(200).send();
+                    }else{
+                        res.status(404).send();
+                    }
+                });
+
+            }else{
+                res.status(404).send();
+            }
+        })
+        
     } catch (err) {
         console.log(err.message);
         res.status(500).json({ message: err.message });
