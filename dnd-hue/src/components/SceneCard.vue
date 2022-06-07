@@ -202,14 +202,6 @@
             </v-fab-transition>
             <v-fab-transition>
             <v-btn
-                fab
-                small
-                @click.stop="toggleEditing"
-                :disabled="saving"
-            ><v-icon v-if="!editing">mdi-pencil</v-icon><v-icon v-else>mdi-cancel</v-icon></v-btn>
-            </v-fab-transition>
-            <v-fab-transition>
-            <v-btn
                 color="red"
                 fab
                 small
@@ -217,6 +209,14 @@
                 v-if="editing"
                 @click.stop="$emit('delete')"
             ><v-icon>mdi-delete</v-icon></v-btn>
+            </v-fab-transition>
+            <v-fab-transition>
+            <v-btn
+                fab
+                small
+                @click.stop="toggleEditing"
+                :disabled="saving"
+            ><v-icon v-if="!editing">mdi-pencil</v-icon><v-icon v-else>mdi-cancel</v-icon></v-btn>
             </v-fab-transition>
         </v-card-actions>
     </v-card>

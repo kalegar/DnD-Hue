@@ -56,7 +56,7 @@
             </v-dialog>
         </v-row>
         <v-row>
-            <v-col v-for="(file) in music" :key="file.id">
+            <v-col v-for="(file) in music" :key="file.id" cols="12" md="6" lg="4" xl="3">
                 <music-card :music="file" v-on:delete="confirmDeleteMusic(file)"></music-card>
             </v-col>
         </v-row>

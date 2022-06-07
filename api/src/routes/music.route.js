@@ -60,6 +60,36 @@ router.get('/:musicID', async(req, res) => {
     }
 });
 
+router.patch('/:musicID', async(req, res) => {
+    try {
+        const musicID = req.params.musicID;
+        const newData = req.body;
+        redisClient.get(`${KEY_PREFIX}${musicID}`, (err, reply) => {
+            if (err) throw err;
+            if (reply) {
+                const data = JSON.parse(reply);
+
+                data.title = newData.title;
+
+                redisClient.set(`${KEY_PREFIX}${musicID}`, JSON.stringify(data), (err, reply) => {
+                    if (err) throw err;
+                    if (reply) {
+                        res.status(200).send();
+                    }else{
+                        res.status(404).send();
+                    }
+                });
+
+            }else{
+                res.status(404).send();
+            }
+        })
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 router.post('/', upload.single("file"), async(req, res) => {
     try {
         const uuid = uuidv4();

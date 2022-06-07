@@ -43,6 +43,22 @@ export const MusicService = {
         });
     },
 
+    updateMusic: function(musicFile) {
+        return new Promise((resolve, reject) => {
+            const url = `${baseURL}/${musicFile.id}`;
+            axios.patch(url, musicFile)
+            .then(res => {
+                if (res.status != 200) {
+                    reject(res.statusText);
+                    return;
+                }
+                resolve();
+            }).catch(err => {
+                reject(err);
+            })
+        });
+    },
+
     deleteMusic: function(id) {
         return new Promise((resolve, reject) => {
             const url = `${baseURL}/${id}`;

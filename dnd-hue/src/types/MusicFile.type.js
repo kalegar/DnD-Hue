@@ -40,7 +40,7 @@ const MusicFile = class {
                 src: [`${BASE_API_URL}/${this.id}` ],
                 format: [this.format],
                 volume: this.#internalVolume,
-                html5: false,
+                html5: true,
                 onloaderror: onLoadError,
                 onplayerror: onPlayError,
                 onload: () => {this.#loaded = true; if (this.afterLoad !== null) {this.afterLoad()}},
