@@ -40,7 +40,15 @@ const MusicFile = class {
                 src: [`${BASE_API_URL}/${this.id}` ],
                 format: [this.format],
                 volume: this.#internalVolume,
-                html5: true,
+                html5: true, // Requires fix in API's node-static Server.finish method: 
+                /*
+                if (status !== 200 || req.method !== 'GET') {
+                    if (!res._header) { // FIX "Can't set headers after they are sent." error.
+                        res.writeHead(status, headers);
+                    }
+                    res.end();
+                }
+                */
                 onloaderror: onLoadError,
                 onplayerror: onPlayError,
                 onload: () => {this.#loaded = true; if (this.afterLoad !== null) {this.afterLoad()}},
